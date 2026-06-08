@@ -2,23 +2,16 @@
 
 import { FormEvent, useState } from "react";
 import { Field } from "@/components/Field";
-import { sampleScenarios } from "@/lib/sampleScenarios";
+import { SampleScenarioPicker } from "@/components/SampleScenarioPicker";
+import {
+  bodyTypeOptions,
+  currentYear,
+  defaultCarInput,
+  fuelTypeOptions,
+  transmissionOptions,
+} from "@/lib/carFormConfig";
+import { validateCarInput } from "@/lib/validateCarInput";
 import type { CarInput, FuelType, Transmission } from "@/types/car";
-
-const currentYear = new Date().getFullYear();
-
-const defaultInput: CarInput = {
-  brand: "Toyota",
-  model: "Avanza",
-  year: 2020,
-  mileageKm: 45000,
-  transmission: "automatic",
-  fuelType: "gasoline",
-  engineDisplacementCc: 1500,
-  bodyType: "MPV",
-  color: "Black",
-  location: "Jakarta",
-};
 
 type CarPredictionFormProps = {
   onSubmit: (input: CarInput) => Promise<void> | void;
@@ -29,7 +22,7 @@ export function CarPredictionForm({
   onSubmit,
   isSubmitting,
 }: CarPredictionFormProps) {
-  const [input, setInput] = useState<CarInput>(defaultInput);
+  const [input, setInput] = useState<CarInput>(defaultCarInput);
   const [error, setError] = useState("");
 
   function updateField<K extends keyof CarInput>(field: K, value: CarInput[K]) {
@@ -39,24 +32,10 @@ export function CarPredictionForm({
     }));
   }
 
-  function validate() {
-    if (!input.brand.trim()) return "Brand is required.";
-    if (!input.model.trim()) return "Model is required.";
-    if (input.year < 1990 || input.year > currentYear) {
-      return `Please enter a valid year between 1990 and ${currentYear}.`;
-    }
-    if (input.mileageKm < 0) return "Mileage must be 0 km or higher.";
-    if (input.engineDisplacementCc <= 0) {
-      return "Engine displacement must be greater than 0 CC.";
-    }
-    if (!input.location.trim()) return "Location is required.";
-    return "";
-  }
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const validationError = validate();
+    const validationError = validateCarInput(input);
     if (validationError) {
       setError(validationError);
       return;
@@ -88,26 +67,12 @@ export function CarPredictionForm({
         </div>
       ) : null}
 
-      <div className="mb-4 rounded-xl border border-rose-100 bg-rose-50/60 p-3">
-        <p className="text-sm font-semibold text-neutral-950">
-          Sample scenarios
-        </p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {sampleScenarios.map((scenario) => (
-            <button
-              key={scenario.label}
-              type="button"
-              onClick={() => {
-                setInput(scenario.input);
-                setError("");
-              }}
-              className="h-8 rounded-lg border border-rose-200 bg-white px-2.5 text-xs font-semibold text-rose-800 shadow-sm transition hover:bg-rose-100"
-            >
-              {scenario.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <SampleScenarioPicker
+        onSelect={(scenarioInput) => {
+          setInput(scenarioInput);
+          setError("");
+        }}
+      />
 
       <div className="grid gap-3 md:grid-cols-2">
         <Field label="Brand">
@@ -157,8 +122,11 @@ export function CarPredictionForm({
               updateField("transmission", event.target.value as Transmission)
             }
           >
-            <option value="manual">Manual</option>
-            <option value="automatic">Automatic</option>
+            {transmissionOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </Field>
 
@@ -170,10 +138,11 @@ export function CarPredictionForm({
               updateField("fuelType", event.target.value as FuelType)
             }
           >
-            <option value="gasoline">Gasoline</option>
-            <option value="diesel">Diesel</option>
-            <option value="hybrid">Hybrid</option>
-            <option value="electric">Electric</option>
+            {fuelTypeOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </Field>
 
@@ -195,14 +164,9 @@ export function CarPredictionForm({
             value={input.bodyType}
             onChange={(event) => updateField("bodyType", event.target.value)}
           >
-            <option>Hatchback</option>
-            <option>Sedan</option>
-            <option>MPV</option>
-            <option>SUV</option>
-            <option>Pickup</option>
-            <option>Van</option>
-            <option>Coupe</option>
-            <option>Other</option>
+            {bodyTypeOptions.map((bodyType) => (
+              <option key={bodyType}>{bodyType}</option>
+            ))}
           </select>
         </Field>
 
