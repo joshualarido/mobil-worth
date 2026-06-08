@@ -2,20 +2,13 @@ import type {
   CarInput,
   PredictionResult as PredictionResultType,
 } from "@/types/car";
+import { formatIDR } from "@/lib/formatCurrency";
 
 type PredictionResultProps = {
   result: PredictionResultType | null;
   input: CarInput | null;
   isLoading: boolean;
 };
-
-function formatIDR(value: number) {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
 
 export function PredictionResult({
   result,

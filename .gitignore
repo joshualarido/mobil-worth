@@ -5,6 +5,9 @@ node_modules
 .next
 out
 
+# local planning/context notes
+docs/
+
 # production
 build
 
